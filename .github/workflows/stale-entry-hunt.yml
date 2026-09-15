@@ -1,8 +1,6 @@
 name: Stale-Entry Hunt
 
 on:
-  schedule:
-    - cron: "0 8 * * 2"
   workflow_dispatch:
 
 permissions:

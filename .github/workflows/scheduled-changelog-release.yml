@@ -1,8 +1,6 @@
 name: Scheduled Changelog & Release
 
 on:
-  schedule:
-    - cron: "0 12 * * 5"
   workflow_dispatch:
 
 permissions:

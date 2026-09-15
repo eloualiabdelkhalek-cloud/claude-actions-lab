@@ -1,8 +1,6 @@
 name: Link Check+Alert
 
 on:
-  schedule:
-    - cron: "0 9 * * *"
   workflow_dispatch:
 
 permissions:
