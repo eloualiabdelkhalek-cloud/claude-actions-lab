@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
   actions: read
 
 jobs:
@@ -18,17 +17,26 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
-          fetch-depth: 0
 
-      - name: Claude Code Repair
+      - name: Create repair branch
+        run: git checkout -b ci-repair/${{ github.event.workflow_run.id }}
+
+      - name: Run Claude to diagnose and fix CI failure
         uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            The CI workflow "${{ github.event.workflow_run.name }}" failed on
-            branch ${{ github.event.workflow_run.head_branch }}.
-            Diagnose the failure from logs, fix the root cause, run the test
-            suite locally to confirm, then commit the fix.
-            Stop after at most 15 turns — if unresolved, leave a summary
-            comment on the associated PR instead of committing a partial fix.
-          claude_args: "--max-turns 15 --allowed-tools Read,Edit,Bash,Grep,Glob"
+            The "CI" workflow failed on run ${{ github.event.workflow_run.id }}.
+            Download the failing job logs, reproduce the failure locally,
+            and apply the minimal fix needed to make CI pass again.
+            Do not change unrelated code.
+          claude_args: "--max-turns 15"
+
+      - name: Push repair branch
+        run: |
+          git config user.name "claude-ci-repair-bot"
+          git config user.email "actions@github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "fix: automated CI repair for run ${{ github.event.workflow_run.id }}"
+          git push origin HEAD
