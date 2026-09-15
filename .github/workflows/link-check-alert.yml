@@ -1,0 +1,28 @@
+name: Link Check+Alert
+
+on:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude Code Link Check
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Find all URLs in markdown files under this repo, check which are
+            broken (404, DNS failure, timeout), and open an issue listing the
+            broken links with their source file and line number. Skip if no
+            broken links found.
+          claude_args: "--allowed-tools Read,Grep,Glob,Bash"

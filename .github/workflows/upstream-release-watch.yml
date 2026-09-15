@@ -1,0 +1,28 @@
+name: Upstream Release Watch
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude Code Upstream Release Check
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Check this repo's key upstream dependencies (frameworks, base
+            images, core libraries) for new releases since the last check.
+            If a new major or notable release exists, open an issue
+            summarizing what changed and whether it looks relevant to us.
+          claude_args: "--allowed-tools Read,Grep,Glob,Bash"

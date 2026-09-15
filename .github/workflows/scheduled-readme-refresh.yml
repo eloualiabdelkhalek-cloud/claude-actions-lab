@@ -1,0 +1,29 @@
+name: Scheduled README Refresh
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code README Refresh
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review README.md against the current state of the codebase (file
+            layout, scripts, setup steps). Open a PR updating any stale
+            sections so the README matches reality.
+          claude_args: "--allowed-tools Read,Edit,Grep,Glob,Bash"

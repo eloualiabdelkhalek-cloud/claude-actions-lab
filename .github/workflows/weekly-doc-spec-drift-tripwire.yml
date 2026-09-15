@@ -1,0 +1,29 @@
+name: Weekly Doc/Spec Drift Tripwire
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+jobs:
+  tripwire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Drift Check
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Compare code committed in the last 7 days against docs/specs in
+            this repo. If code changed in ways docs don't reflect, open an
+            issue summarizing the drift areas, file by file.
+          claude_args: "--allowed-tools Read,Grep,Glob,Bash"

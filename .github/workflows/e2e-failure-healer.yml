@@ -1,0 +1,34 @@
+name: E2E Failure Healer
+
+on:
+  workflow_run:
+    workflows: ["E2E"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  id-token: write
+
+jobs:
+  heal:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+
+      - name: Claude Code E2E Healer
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            The E2E test workflow failed on branch
+            ${{ github.event.workflow_run.head_branch }}. Diagnose whether the
+            failure is a flaky test or a real regression. If flaky (timing,
+            selector drift), fix the test. If a real regression, leave a
+            detailed PR comment instead of a blind fix.
+          claude_args: "--max-turns 15 --allowed-tools Read,Edit,Bash,Grep,Glob"

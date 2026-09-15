@@ -1,0 +1,30 @@
+name: Release-Readiness Watch
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Release Readiness Check
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Assess release readiness of the main branch: check open blocking
+            issues (label "blocker"), failing CI on main, and unmerged PRs
+            labeled "release-target". Open or update a tracking issue titled
+            "Release Readiness" summarizing status.
+          claude_args: "--allowed-tools Read,Grep,Glob,Bash"

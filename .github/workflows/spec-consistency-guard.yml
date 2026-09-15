@@ -1,0 +1,28 @@
+name: Spec Consistency Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Spec Consistency Check
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Compare this PR's code changes against any spec/design docs in the
+            repo (e.g. docs/, *.spec.md, API schema files). Comment on the PR
+            if the implementation diverges from the documented spec.
+          claude_args: "--allowed-tools Read,Grep,Glob"

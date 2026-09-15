@@ -1,0 +1,30 @@
+name: AI Skill Maintenance
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Skill Maintenance
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review any AI skill/prompt definition files in this repo (e.g. under
+            .claude/skills, skills/, or SKILL.md files) for staleness: broken
+            references, outdated instructions, or inconsistencies with the
+            current codebase. Open a PR with fixes if any are found.
+          claude_args: "--allowed-tools Read,Edit,Grep,Glob,Bash"

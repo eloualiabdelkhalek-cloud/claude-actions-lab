@@ -1,0 +1,30 @@
+name: Nightly Dependency Sweep
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Dependency Sweep
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Check for outdated or vulnerable dependencies in this repo's
+            package manifests. Open a PR bumping safe, non-breaking versions.
+            Flag any major-version or breaking bumps in the PR description
+            instead of applying them.
+          claude_args: "--allowed-tools Read,Edit,Bash,Grep,Glob"

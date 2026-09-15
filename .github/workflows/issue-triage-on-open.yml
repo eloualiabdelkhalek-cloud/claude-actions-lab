@@ -1,0 +1,26 @@
+name: Issue Triage on Open
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+  contents: read
+  id-token: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude Code Issue Triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Triage this newly opened issue: classify it (bug, feature request,
+            question, docs) and apply the matching label. If it's a bug report
+            missing repro steps, comment asking for them.
+          claude_args: "--allowed-tools Read,Grep,Glob,Bash"

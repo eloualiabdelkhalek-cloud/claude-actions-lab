@@ -1,0 +1,27 @@
+name: Stale Issue Sweep
+
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  id-token: write
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Claude Code Stale Issue Sweep
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Find issues with no activity in the last 30 days. Comment asking
+            for a status update and label them "stale". If an issue already
+            labeled "stale" gets no response after 7 more days, close it with
+            an explanatory comment.
+          claude_args: "--allowed-tools Bash"

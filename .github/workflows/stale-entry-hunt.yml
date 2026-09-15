@@ -1,0 +1,30 @@
+name: Stale-Entry Hunt
+
+on:
+  schedule:
+    - cron: "0 8 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Stale-Entry Hunt
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Search config files, changelogs, and data files (e.g. CODEOWNERS,
+            .env.example, feature-flag configs) for entries referencing
+            removed files, deleted branches, or deprecated identifiers.
+            Open a PR removing confirmed dead entries.
+          claude_args: "--allowed-tools Read,Edit,Grep,Glob,Bash"

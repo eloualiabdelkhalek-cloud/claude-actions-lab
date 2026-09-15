@@ -1,0 +1,30 @@
+name: Scheduled Changelog & Release
+
+on:
+  schedule:
+    - cron: "0 12 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Changelog Draft
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Summarize merged PRs since the last tagged release into a
+            CHANGELOG.md entry (grouped: features, fixes, chores). Open a PR
+            with the changelog update. Do not create a git tag or GitHub
+            release — leave that for a human to trigger.
+          claude_args: "--allowed-tools Read,Edit,Bash,Grep,Glob"
